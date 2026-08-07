@@ -9,4 +9,17 @@
                 :serial t
                 :components ((:file "package")
                              (:file "conditions")
-                             (:file "format")))))
+                             (:file "format"))))
+  :in-order-to ((asdf:test-op (asdf:test-op #:idsmall/tests))))
+
+(asdf:defsystem #:idsmall/tests
+  :description "Tests for idsmall"
+  :depends-on (#:idsmall)
+  :serial t
+  :components ((:module "tests"
+                :serial t
+                :components ((:file "package")
+                             (:file "tests"))))
+  :perform (asdf:test-op (operation component)
+             (declare (ignore operation component))
+             (uiop:symbol-call '#:idsmall/tests '#:run-tests)))

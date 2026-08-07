@@ -11,3 +11,15 @@
            #:identifier-p
            #:identifier-space-exhausted
            #:identifier-space-exhausted-timestamp))
+
+(defpackage #:idsmall/tests
+  (:use #:cl)
+  (:import-from #:idsmall
+                #:identifier-base
+                #:identifier-display
+                #:identifier-error
+                #:identifier-from-seed
+                #:identifier-length
+                #:identifier-normalize
+                #:identifier-p)
+  (:export #:run-tests))
