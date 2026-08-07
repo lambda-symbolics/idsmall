@@ -101,11 +101,97 @@
                "a suffix above the unsigned 32-bit bound is rejected")
   nil)
 
+(defun tests--allocation ()
+  "Exercise seeded probing, the occupancy callback, and exhaustion."
+  (let ((timestamp 3993000000))
+    (let ((*random-index-function* (constantly 0)))
+      (test-assert (string= (identifier-generate :timestamp timestamp)
+                            (identifier-from-seed timestamp 0))
+                   "allocation starts from the seed the entropy source returns")
+      (identifier-clear-reservations)
+      (test-assert
+       (string= (identifier-generate
+                 :timestamp timestamp
+                 :reserved-identifiers (list (identifier-from-seed timestamp 0)))
+                (identifier-from-seed timestamp 1))
+       "a reserved identifier is skipped")
+      (identifier-clear-reservations)
+      (test-assert
+       (string= (identifier-generate
+                 :timestamp timestamp
+                 :reserved-identifiers
+                 (list (identifier-display (identifier-from-seed timestamp 0))))
+                (identifier-from-seed timestamp 1))
+       "a display form reserves its canonical identifier")
+      (identifier-clear-reservations)
+      (test-assert (string= (identifier-generate
+                             :timestamp timestamp
+                             :reserved-identifiers (list "nonsense" nil 42))
+                            (identifier-from-seed timestamp 0))
+                   "values that are not identifiers cannot reserve a seed")
+      (identifier-clear-reservations)
+      (test-assert
+       (string= (identifier-generate
+                 :timestamp timestamp
+                 :occupied-p (lambda (candidate)
+                               (string= candidate
+                                        (identifier-from-seed timestamp 0))))
+                (identifier-from-seed timestamp 1))
+       "the occupancy callback excludes a candidate")
+      (identifier-clear-reservations))
+    (let ((*random-index-function* (constantly (1- (identifier-base)))))
+      (test-assert
+       (string= (identifier-generate
+                 :timestamp timestamp
+                 :reserved-identifiers
+                 (list (identifier-from-seed timestamp (1- (identifier-base)))))
+                (identifier-from-seed timestamp 0))
+       "probing wraps from the highest seed to the lowest")
+      (identifier-clear-reservations))
+    (let ((*random-index-function* (constantly (identifier-base))))
+      (test-assert (signals identifier-error
+                     (identifier-generate :timestamp timestamp))
+                   "an out-of-range entropy result is rejected"))
+    (let ((identifiers (loop repeat (identifier-base)
+                             collect (identifier-generate :timestamp timestamp))))
+      (test-assert (= (length (remove-duplicates identifiers :test #'string=))
+                      (identifier-base))
+                   "one second allocates every seed exactly once")
+      (test-assert (handler-case
+                       (progn (identifier-generate :timestamp timestamp) nil)
+                     (identifier-space-exhausted (condition)
+                       (= (identifier-space-exhausted-timestamp condition)
+                          timestamp)))
+                   "exhausting a second reports the timestamp")
+      (test-assert (every #'identifier-reserved-p identifiers)
+                   "an allocated identifier is reserved")
+      (test-assert (every #'identifier-reserved-p
+                          (mapcar #'identifier-display identifiers))
+                   "a reservation is recognized through the display form")
+      (test-assert (every #'identifier-release identifiers)
+                   "releasing a reservation reports that one existed")
+      (test-assert (notany #'identifier-release identifiers)
+                   "releasing twice reports that none remained")))
+  (let ((identifier (identifier-generate :namespace :alpha)))
+    (test-assert (identifier-reserved-p identifier :namespace :alpha)
+                 "an identifier is reserved within its own namespace")
+    (test-assert (not (identifier-reserved-p identifier :namespace :beta))
+                 "reservations do not leak between namespaces")
+    (identifier-clear-reservations))
+  (let* ((before     (get-universal-time))
+         (identifier (identifier-generate))
+         (after      (get-universal-time)))
+    (test-assert (<= before (identifier-timestamp identifier) after)
+                 "allocation defaults to the current universal time"))
+  (identifier-clear-reservations)
+  nil)
+
 (defun run-tests ()
   "Run every idsmall regression test."
   (setf *test-count* 0)
   (tests--encoding)
   (tests--forms)
   (tests--decoding)
+  (tests--allocation)
   (format t "~&~:D idsmall tests passed.~%" *test-count*)
   nil)

@@ -25,13 +25,20 @@
 (defpackage #:idsmall/tests
   (:use #:cl)
   (:import-from #:idsmall
+                #:*random-index-function*
                 #:identifier-base
+                #:identifier-clear-reservations
                 #:identifier-display
                 #:identifier-error
                 #:identifier-from-seed
+                #:identifier-generate
                 #:identifier-length
                 #:identifier-normalize
                 #:identifier-p
+                #:identifier-release
+                #:identifier-reserved-p
                 #:identifier-seed-index
+                #:identifier-space-exhausted
+                #:identifier-space-exhausted-timestamp
                 #:identifier-timestamp)
   (:export #:run-tests))
