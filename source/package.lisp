@@ -9,8 +9,10 @@
            #:identifier-length
            #:identifier-normalize
            #:identifier-p
+           #:identifier-seed-index
            #:identifier-space-exhausted
-           #:identifier-space-exhausted-timestamp))
+           #:identifier-space-exhausted-timestamp
+           #:identifier-timestamp))
 
 (defpackage #:idsmall/tests
   (:use #:cl)

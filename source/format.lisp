@@ -156,3 +156,58 @@ unsigned 32-bit input has one fixed-width encoding."
                (setf (char encoded position) (char *alphabet* remainder)
                      remaining               quotient)))
     encoded))
+
+
+;;;; -- Decoding --
+
+(defun identifier-seed-index (identifier)
+  "Return the Base58 seed index that IDENTIFIER carries in its first character."
+  (identifier--alphabet-index (char (identifier-normalize identifier) 0)))
+
+(defun identifier-timestamp (identifier)
+  "Return the universal time that IDENTIFIER encodes.
+
+The scramble is a bijection, so the recovered value is exact for every
+timestamp below two to the thirty-second seconds, which covers universal times
+before the year 2036. Later timestamps are recovered modulo that bound.
+
+Signal IDENTIFIER-ERROR when IDENTIFIER is malformed, or when its suffix does
+not encode an unsigned 32-bit value and therefore was not produced here."
+  (let* ((canonical  (identifier-normalize identifier))
+         (seed-index (identifier--alphabet-index (char canonical 0)))
+         (scrambled  (identifier--decode-suffix (subseq canonical 1))))
+    (multiple-value-bind (multiplier offset)
+        (identifier--seed-parameters seed-index)
+      (mod (* (identifier--invert32 multiplier) (- scrambled offset))
+           (identifier--modulus)))))
+
+(defun identifier--decode-suffix (suffix)
+  "Return the unsigned 32-bit value that Base58 SUFFIX encodes.
+
+Six Base58 characters span more values than two to the thirty-second, so a
+suffix above that bound is rejected rather than silently reduced."
+  (let ((value 0))
+    (loop for character across suffix
+          do (setf value (+ (* value (identifier-base))
+                            (identifier--alphabet-index character))))
+    (unless (<= value (identifier--mask))
+      (identifier--fail
+       "An identifier suffix does not encode an unsigned 32-bit value."
+       suffix))
+    value))
+
+(defun identifier--invert32 (multiplier)
+  "Return the modular inverse of odd MULTIPLIER modulo two to the thirty-second.
+
+Newton's iteration doubles the number of correct low bits at each step, so five
+steps from an initial estimate of one reach the full 32 bits."
+  (let ((inverse 1))
+    (dotimes (step 5)
+      (declare (ignore step))
+      (setf inverse (logand (* inverse (- 2 (* multiplier inverse)))
+                            (identifier--mask))))
+    (unless (= 1 (logand (* multiplier inverse) (identifier--mask)))
+      (identifier--fail
+       "An identifier multiplier is not invertible modulo two to the thirty-second."
+       multiplier))
+    inverse))
