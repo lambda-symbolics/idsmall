@@ -23,5 +23,7 @@
                 #:identifier-from-seed
                 #:identifier-length
                 #:identifier-normalize
-                #:identifier-p)
+                #:identifier-p
+                #:identifier-seed-index
+                #:identifier-timestamp)
   (:export #:run-tests))
