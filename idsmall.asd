@@ -9,7 +9,8 @@
                 :serial t
                 :components ((:file "package")
                              (:file "conditions")
-                             (:file "format"))))
+                             (:file "format")
+                             (:file "allocation"))))
   :in-order-to ((asdf:test-op (asdf:test-op #:idsmall/tests))))
 
 (asdf:defsystem #:idsmall/tests
