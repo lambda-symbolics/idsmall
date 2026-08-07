@@ -8,4 +8,5 @@
   :components ((:module "source"
                 :serial t
                 :components ((:file "package")
-                             (:file "conditions")))))
+                             (:file "conditions")
+                             (:file "format")))))
