@@ -17,10 +17,8 @@ universal time, scrambled by a bijection derived from that seed.
 ;; => 3993000000
 #+END_SRC
 
-Identifiers are short enough to read aloud and type, they sort into no
-meaningful order, and they do not advertise their creation time to a casual
-reader. The timestamp is recoverable, so this hides nothing from anyone holding
-this library. Do not treat an identifier as a secret or a capability.
+Identifiers are short enough to read aloud and type. They sort into no
+meaningful order. The timestamp is recoverable with this library.
 
 * Format
 
@@ -35,8 +33,8 @@ identifiers are portable across hosts of any fixnum width. Six Base58
 characters span more than two to the thirty-second values, so every unsigned
 32-bit input has one fixed-width encoding.
 
-The format is fixed. Do not rebind the internal alphabet or suffix width: doing
-so silently invalidates every identifier already stored.
+The format is fixed. The internal alphabet and suffix width define every
+identifier already stored.
 
 * Display form
 
@@ -45,13 +43,12 @@ two parts distinguishable when a person reads an identifier back. Every
 function accepting an identifier accepts both forms, and =identifier-normalize=
 converts either to the canonical form. Both signal =identifier-error= on
 anything else, so callers holding foreign or legacy values should guard those
-calls rather than expect the value back unchanged.
+calls.
 
 * Allocation
 
 One namespace holds at most =identifier-base= identifiers per second, one per
-seed, so allocation checks for collisions. The library does not know where
-identifiers are stored, so the caller supplies that knowledge:
+seed, so allocation checks for collisions. The caller supplies occupancy:
 
 #+BEGIN_SRC lisp
 (idsmall:identifier-generate
@@ -63,17 +60,16 @@ identifiers are stored, so the caller supplies that knowledge:
 The first seed comes from =*random-index-function*=, which is seeded from the
 operating system. A taken candidate causes every remaining seed to be probed
 exactly once, so allocation either succeeds or signals
-=identifier-space-exhausted= for a genuinely full second. Entropy quality only
-spreads identifiers across seeds; it never affects correctness. Bind
-=*random-index-function*= to make allocation reproducible under test.
+=identifier-space-exhausted= for a full second. Entropy quality only spreads
+identifiers across seeds. Bind =*random-index-function*= to make allocation
+reproducible under test.
 
-=occupied-p= runs while the allocation lock is held, so it must not call back
-into this library.
+=occupied-p= runs while the allocation lock is held.
 
 * Reservations
 
 A generated identifier is reserved in this process until it is released, so two
-threads never receive the same one while the first has yet to persist it.
+threads receive distinct values while the first has yet to persist it.
 
 #+BEGIN_SRC lisp
 (let ((identifier (idsmall:identifier-generate :namespace :conversations)))
@@ -84,9 +80,8 @@ threads never receive the same one while the first has yet to persist it.
 
 Release an identifier once the caller's own storage holds it, or once the work
 that requested it is abandoned. A leaked reservation costs one seed for one
-second and nothing more. Reservations are process-local: they coordinate
-threads, not processes. Concurrent processes sharing storage must make
-=occupied-p= authoritative.
+second. Reservations are process-local: they coordinate threads. Concurrent
+processes sharing storage must make =occupied-p= authoritative.
 
 =:namespace= separates independent identifier spaces in one process; it
 defaults to =t=. =identifier-clear-reservations= drops every reservation, which
@@ -96,8 +91,7 @@ suits test teardown.
 
 =identifier-timestamp= is exact for every universal time below two to the
 thirty-second seconds, which covers dates before 2036. Later timestamps encode
-and decode modulo that bound. A suffix above the bound cannot have come from
-this library and is rejected.
+and decode modulo that bound.
 
 * Tests
 
