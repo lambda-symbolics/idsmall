@@ -94,7 +94,7 @@ second."
                         (format nil
                                 "Every identifier seed is occupied for universal time ~D."
                                 timestamp)
-                        :value timestamp
+                        :value     timestamp
                         :timestamp timestamp))))))
 
 (defun identifier--first-seed ()

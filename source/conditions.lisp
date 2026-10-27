@@ -4,15 +4,15 @@
 
 (define-condition identifier-error (error)
   ((message
-    :initarg :message
-    :reader identifier-error-message
-    :type string
+    :initarg       :message
+    :reader        identifier-error-message
+    :type          string
     :documentation "The human-readable description of the failure.")
    (value
-    :initarg :value
-    :initform nil
-    :reader identifier-error-value
-    :type t
+    :initarg       :value
+    :initform      nil
+    :reader        identifier-error-value
+    :type          t
     :documentation "The value that could not be parsed, encoded, or decoded."))
   (:report
    (lambda (condition stream)
@@ -21,9 +21,9 @@
 
 (define-condition identifier-space-exhausted (identifier-error)
   ((timestamp
-    :initarg :timestamp
-    :reader identifier-space-exhausted-timestamp
-    :type unsigned-byte
+    :initarg       :timestamp
+    :reader        identifier-space-exhausted-timestamp
+    :type          unsigned-byte
     :documentation "The universal time for which every seed was occupied."))
   (:documentation
    "Every seed is occupied for one second, so no identifier remains free."))

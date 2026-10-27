@@ -111,7 +111,7 @@
       (identifier-clear-reservations)
       (test-assert
        (string= (identifier-generate
-                 :timestamp timestamp
+                 :timestamp            timestamp
                  :reserved-identifiers (list (identifier-from-seed timestamp 0)))
                 (identifier-from-seed timestamp 1))
        "a reserved identifier is skipped")
@@ -125,14 +125,14 @@
        "a display form reserves its canonical identifier")
       (identifier-clear-reservations)
       (test-assert (string= (identifier-generate
-                             :timestamp timestamp
+                             :timestamp            timestamp
                              :reserved-identifiers (list "nonsense" nil 42))
                             (identifier-from-seed timestamp 0))
                    "values that are not identifiers cannot reserve a seed")
       (identifier-clear-reservations)
       (test-assert
        (string= (identifier-generate
-                 :timestamp timestamp
+                 :timestamp  timestamp
                  :occupied-p (lambda (candidate)
                                (string= candidate
                                         (identifier-from-seed timestamp 0))))
