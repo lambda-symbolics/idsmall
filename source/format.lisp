@@ -202,10 +202,9 @@ suffix above that bound is rejected rather than silently reduced."
 Newton's iteration doubles the number of correct low bits at each step, so five
 steps from an initial estimate of one reach the full 32 bits."
   (let ((inverse 1))
-    (dotimes (step 5)
-      (declare (ignore step))
-      (setf inverse (logand (* inverse (- 2 (* multiplier inverse)))
-                            (identifier--mask))))
+    (loop repeat 5
+          do (setf inverse (logand (* inverse (- 2 (* multiplier inverse)))
+                                   (identifier--mask))))
     (unless (= 1 (logand (* multiplier inverse) (identifier--mask)))
       (identifier--fail
        "An identifier multiplier is not invertible modulo two to the thirty-second."
