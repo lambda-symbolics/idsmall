@@ -1,4 +1,5 @@
 (defpackage #:idsmall
+  (:documentation "Short Base58 identifiers that carry a scrambled timestamp.")
   (:use #:cl)
   (:import-from #:bordeaux-threads
                 #:make-lock
@@ -23,6 +24,7 @@
            #:identifier-timestamp))
 
 (defpackage #:idsmall/tests
+  (:documentation "Regression tests for idsmall.")
   (:use #:cl)
   (:import-from #:idsmall
                 #:*random-index-function*
