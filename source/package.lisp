@@ -14,6 +14,7 @@
            #:identifier-from-seed
            #:identifier-generate
            #:identifier-length
+           #:identifier-match
            #:identifier-normalize
            #:identifier-p
            #:identifier-release
@@ -35,6 +36,7 @@
                 #:identifier-from-seed
                 #:identifier-generate
                 #:identifier-length
+                #:identifier-match
                 #:identifier-normalize
                 #:identifier-p
                 #:identifier-release

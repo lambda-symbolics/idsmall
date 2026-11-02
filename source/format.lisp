@@ -210,3 +210,46 @@ steps from an initial estimate of one reach the full 32 bits."
        "An identifier multiplier is not invertible modulo two to the thirty-second."
        multiplier))
     inverse))
+
+
+;;;; -- Fragment Matching --
+
+(defun identifier--matching-text (value)
+  "Return VALUE in canonical form when it is an identifier, else VALUE itself."
+  (handler-case (identifier-normalize value)
+    (identifier-error ()
+      value)))
+
+(defun identifier--fragment-text (fragment)
+  "Return FRAGMENT without the display hyphen after its first character."
+  (if (and (>= (length fragment) 2) (char= (char fragment 1) #\-))
+      (concatenate 'string (subseq fragment 0 1) (subseq fragment 2))
+      fragment))
+
+(defun identifier-match (fragment identifiers &key (key #'identity))
+  "Return the members of IDENTIFIERS that FRAGMENT selects, in their order.
+
+KEY maps each member to the identifier string it carries. A member whose
+identifier equals FRAGMENT, in canonical or display form, is the only match.
+Otherwise every member whose canonical identifier contains FRAGMENT matches,
+compared without regard to case and with FRAGMENT's display hyphen removed.
+Identifiers of other shapes are compared as their own text. An empty
+FRAGMENT matches nothing."
+  (if (or (not (stringp fragment)) (zerop (length fragment)))
+      nil
+      (let* ((texts (mapcar (lambda (member)
+                              (let ((identifier (funcall key member)))
+                                (and (stringp identifier)
+                                     (identifier--matching-text identifier))))
+                            identifiers))
+             (exact (identifier--matching-text fragment))
+             (loose (identifier--fragment-text fragment))
+             (found (loop for member in identifiers
+                          for text in texts
+                          when (and text (string= text exact))
+                            collect member)))
+        (or found
+            (loop for member in identifiers
+                  for text in texts
+                  when (and text (search loose text :test #'char-equal))
+                    collect member)))))

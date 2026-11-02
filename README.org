@@ -45,6 +45,22 @@ converts either to the canonical form. Both signal =identifier-error= on
 anything else, so callers holding foreign or legacy values should guard those
 calls.
 
+* Matching typed fragments
+
+=identifier-match= selects members of a list by a fragment a person typed. A
+fragment equal to one member's identifier, in either form, selects that member
+alone. Otherwise every member whose canonical identifier contains the fragment
+is returned, compared without regard to case and with the display hyphen
+removed from the fragment, so =4P5= and =g-4p5= both find =g-4P5Hsc=. Callers
+act on exactly one match and show several back to the person. A =:key=
+function reads the identifier from each member, and members whose identifiers
+have another shape are compared as their own text.
+
+#+BEGIN_SRC lisp
+(idsmall:identifier-match "uWB" '("31uWB8L" "3-1uWC9M"))
+;; => ("31uWB8L")
+#+END_SRC
+
 * Allocation
 
 One namespace holds at most =identifier-base= identifiers per second, one per
