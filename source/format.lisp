@@ -85,7 +85,7 @@ removed, so this predicate only recognizes the shape."
   "Return the unsigned 32-bit mix of VALUE.
 
 The operation is the MurmurHash3 32-bit finalizer. Every intermediate product
-is reduced modulo two to the thirty-second, so the result never depends on the
+is reduced modulo two to the thirty-second, so the result does not depend on the
 host fixnum width."
   (let ((mixed (logand value (identifier--mask))))
     (setf mixed (logand (logxor mixed (ash mixed -16)) (identifier--mask))
@@ -161,7 +161,7 @@ unsigned 32-bit input has one fixed-width encoding."
 ;;;; -- Decoding --
 
 (defun identifier-seed-index (identifier)
-  "Return the Base58 seed index that IDENTIFIER carries in its first character."
+  "Return the Base58 seed index that carried by the IDENTIFIER in its first character."
   (identifier--alphabet-index (char (identifier-normalize identifier) 0)))
 
 (defun identifier-timestamp (identifier)

@@ -1,5 +1,5 @@
 (asdf:defsystem #:idsmall
-  :description "Short Base58 identifiers holding a reversibly scrambled timestamp"
+  :description "Short readable Base58 identifiers that use a reversibly scrambled timestamp"
   :author      "Lukáš Hozda"
   :license     "COLL-Attribution"
   :version     "0.1.0"

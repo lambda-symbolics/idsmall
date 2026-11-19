@@ -1,5 +1,5 @@
 (defpackage #:idsmall
-  (:documentation "Short Base58 identifiers that carry a scrambled timestamp.")
+  (:documentation "Short Base58 easy to type IDs based on encoded scrambled timestamps.")
   (:use #:cl)
   (:import-from #:bordeaux-threads
                 #:make-lock

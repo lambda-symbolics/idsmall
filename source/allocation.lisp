@@ -35,14 +35,14 @@ Bind this to a deterministic function to make allocation reproducible.")
 (defun identifier-release (identifier &key (namespace t))
   "Drop IDENTIFIER's reservation in NAMESPACE.
 
-Return true when a reservation existed. Release an identifier once the caller's
-own storage holds it, or once the work that requested it is abandoned."
+Return true when a reservation existed. Release an identifier once it is in the caller's
+own storage, or once the request is abandoned."
   (with-lock-held (*lock*)
     (not (null (remhash (identifier--reservation-key identifier namespace)
                         *reservations*)))))
 
 (defun identifier-clear-reservations ()
-  "Drop every reservation this process holds, in every namespace."
+  "Drop every reservation held by this process, in every namespace."
   (with-lock-held (*lock*)
     (clrhash *reservations*))
   nil)
