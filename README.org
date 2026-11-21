@@ -39,9 +39,9 @@ identifier already stored.
 * Display form
 
 =identifier-display= inserts a hyphen after the seed character, which makes the
-two parts distinguishable when a person reads an identifier back. Every
-function accepting an identifier accepts both forms, and =identifier-normalize=
-converts either to the canonical form. Both signal =identifier-error= on
+two parts distinguishable when a person reads an identifier back. The format
+conversion and timestamp functions accept both forms. =identifier-normalize=
+converts either to the canonical form. Both conversions signal =identifier-error= on
 anything else, so callers holding foreign or legacy values should guard those
 calls.
 
@@ -59,6 +59,28 @@ have another shape are compared as their own text.
 #+BEGIN_SRC lisp
 (idsmall:identifier-match "uWB" '("31uWB8L" "3-1uWC9M"))
 ;; => ("31uWB8L")
+#+END_SRC
+
+* Selecting a prefix
+
+Use =identifier-select= to select one entity by its exact identifier or by a
+unique nonempty prefix. Compare arbitrary strings case-sensitively, without
+normalization or substring matching. Supply =:key= to read the identifier from
+each entity. An exact match takes priority over longer identifiers. No match
+returns =nil=. Handle =identifier-ambiguity= when several prefix matches exist;
+read the reference and matching identifiers with
+=identifier-ambiguity-reference= and =identifier-ambiguity-identifiers=.
+
+Use =identifier-reference= to obtain the shortest prefix that selects an
+identifier from a list. Supply =:minimum-length= to set the first length to try;
+it defaults to seven and is capped at the full identifier length.
+
+#+BEGIN_SRC lisp
+(idsmall:identifier-select "alpha" '("alpha-more" "alpha"))
+;; => "alpha"
+
+(idsmall:identifier-reference "alphabet" '("alphabet" "alpine") :minimum-length 1)
+;; => "alph"
 #+END_SRC
 
 * Allocation

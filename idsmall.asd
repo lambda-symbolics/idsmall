@@ -10,6 +10,7 @@
                  :components ((:file "package")
                               (:file "conditions")
                               (:file "format")
+                              (:file "selection")
                               (:file "allocation"))))
   :in-order-to ((asdf:test-op (asdf:test-op #:idsmall/tests))))
 

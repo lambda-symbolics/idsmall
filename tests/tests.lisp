@@ -228,6 +228,62 @@
                  "members without a string identifier never match"))
   nil)
 
+(defun tests--selection ()
+  "Exercise exact-first, case-sensitive selection of arbitrary identifiers."
+  (dolist (case '(("abc" ("abc-more" "abc") "abc")
+                  ("abc-" ("abc-more" "abc") "abc-more")
+                  ("ABC" ("abc-more") nil)
+                  ("bc" ("abc-more") nil)
+                  ("a-b" ("ab") nil)
+                  ("abcd" ("abc") nil)
+                  ("" ("abc" "abd") nil)
+                  ("" ("abc" "") "")
+                  ("missing" () nil)
+                  ("猫" ("猫alpha") "猫alpha")))
+    (destructuring-bind (reference identifiers expected) case
+      (test-assert (equal expected (identifier-select reference identifiers))
+                   (format nil "~S selects ~S from ~S" reference expected identifiers))))
+  (let ((entities (list (cons "alpha-more" :long) (cons "alpha" :exact))))
+    (test-assert (eq (second entities) (identifier-select "alpha" entities :key #'first))
+                 "an exact keyed entity takes priority over a longer identifier")
+    (test-assert (eq (first entities) (identifier-select "alpha-" entities :key #'first))
+                 "a unique keyed prefix returns the original entity"))
+  (let ((entities (list (cons "alpine" :first) (cons "alpha" :second))))
+    (test-assert
+     (handler-case
+         (progn (identifier-select "al" entities :key #'first) nil)
+       (identifier-ambiguity (condition)
+         (and (string= (identifier-ambiguity-reference condition) "al")
+              (equal (identifier-ambiguity-identifiers condition) '("alpine" "alpha")))))
+     "typed ambiguity contains the reference and ordered matching identifiers"))
+  (test-assert (null (identifier-select "a" '(nil "ab") :key (lambda (entity) (or entity "a"))))
+               "an exact NIL entity takes priority over a longer keyed identifier")
+  nil)
+
+(defun tests--references ()
+  "Exercise distinguishing prefixes, exact priority, and minimum lengths."
+  (dolist (case '(("alphabet" ("alphabet" "alpine") 1 "alph")
+                  ("al" ("alpha" "al") 1 "al")
+                  ("ALPHA" ("ALPHA" "alpha") 1 "A")
+                  ("abcdefghi" ("abcdefghi" "zz") 7 "abcdefg")
+                  ("abcdefghi" ("abcdefghi" "abcdefgz") 7 "abcdefgh")
+                  ("abcdefgh-1" ("abcdefgh-1" "abcdefgh-2") 7 "abcdefgh-1")
+                  ("short" ("short") 7 "short")
+                  ("longer" ("longer") 20 "longer")
+                  ("absent" ("other") 1 "absent")
+                  ("" ("") 1 "")))
+    (destructuring-bind (identifier identifiers minimum-length expected) case
+      (test-assert (string= expected (identifier-reference identifier identifiers
+                                                         :minimum-length minimum-length))
+                   (format nil "~S has distinguishing reference ~S at minimum ~D"
+                           identifier expected minimum-length))))
+  (test-assert (string= "abcdefg" (identifier-reference "abcdefghi" '("abcdefghi")))
+               "the default minimum length is seven")
+  (dolist (minimum '(0 -1 "1"))
+    (test-assert (signals type-error (identifier-reference "id" '("id") :minimum-length minimum))
+                 "the minimum length must be a positive integer"))
+  nil)
+
 (defun run-tests ()
   "Run every idsmall regression test."
   (setf *test-count* 0)
@@ -236,5 +292,7 @@
   (tests--decoding)
   (tests--allocation)
   (tests--matching)
+  (tests--selection)
+  (tests--references)
   (format t "~&~:D idsmall tests passed.~%" *test-count*)
   nil)

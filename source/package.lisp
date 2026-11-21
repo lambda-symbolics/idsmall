@@ -5,6 +5,9 @@
                 #:make-lock
                 #:with-lock-held)
   (:export #:*random-index-function*
+           #:identifier-ambiguity
+           #:identifier-ambiguity-identifiers
+           #:identifier-ambiguity-reference
            #:identifier-base
            #:identifier-clear-reservations
            #:identifier-display
@@ -17,9 +20,11 @@
            #:identifier-match
            #:identifier-normalize
            #:identifier-p
+           #:identifier-reference
            #:identifier-release
            #:identifier-reserved-p
            #:identifier-seed-index
+           #:identifier-select
            #:identifier-space-exhausted
            #:identifier-space-exhausted-timestamp
            #:identifier-timestamp))
@@ -29,6 +34,9 @@
   (:use #:cl)
   (:import-from #:idsmall
                 #:*random-index-function*
+                #:identifier-ambiguity
+                #:identifier-ambiguity-identifiers
+                #:identifier-ambiguity-reference
                 #:identifier-base
                 #:identifier-clear-reservations
                 #:identifier-display
@@ -39,9 +47,11 @@
                 #:identifier-match
                 #:identifier-normalize
                 #:identifier-p
+                #:identifier-reference
                 #:identifier-release
                 #:identifier-reserved-p
                 #:identifier-seed-index
+                #:identifier-select
                 #:identifier-space-exhausted
                 #:identifier-space-exhausted-timestamp
                 #:identifier-timestamp)
